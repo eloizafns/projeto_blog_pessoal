@@ -21,25 +21,25 @@ import com.generation.blogpessoal.model.Usuario;
 import com.generation.blogpessoal.repository.UsuarioRepository;
 import com.generation.blogpessoal.service.UsuarioService;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT) //utiliza porta que estiver disponivel para executar o código
+@TestInstance(TestInstance.Lifecycle.PER_CLASS) //instancia o objeto
 public class UsuarioControllerTest {
 
-	@Autowired
+	@Autowired //Simula o Insomnia - envia as requisições para nossa aplicação
 	private TestRestTemplate testRestTemplate;
 
-	@Autowired
+	@Autowired //Chama o usuarioService para usarmos os métodos
 	private UsuarioService usuarioService;
 
-	@Autowired
+	@Autowired //Chama a usuarioRepository para usar os métodos
 	private UsuarioRepository usuarioRepository;
 
-	@BeforeAll
+	@BeforeAll //Indica que o método abaixo é executado antes de todos os métodos (limpa os dados da tabela e cria o usuário)
 	void start(){
 
 		usuarioRepository.deleteAll();
 
-		usuarioService.cadastrarUsuario(new Usuario(0L, 
+		usuarioService.cadastrarUsuario(new Usuario(0L, //instanciamento da classe usuario
 			"Root", "root@root.com", "rootroot", "-"));
 
 	}
@@ -48,13 +48,13 @@ public class UsuarioControllerTest {
 	@DisplayName("Cadastrar Um Usuário")
 	public void deveCriarUmUsuario() {
 
-		HttpEntity<Usuario> corpoRequisicao = new HttpEntity<Usuario>(new Usuario(0L, 
+		HttpEntity<Usuario> corpoRequisicao = new HttpEntity<Usuario>(new Usuario(0L, //cria a variavel (corpo requisição) monta o corpo da requisição
 			"Paulo Antunes", "paulo_antunes@email.com.br", "13465278", "-"));
 
-		ResponseEntity<Usuario> corpoResposta = testRestTemplate
-			.exchange("/usuarios/cadastrar", HttpMethod.POST, corpoRequisicao, Usuario.class);
+		ResponseEntity<Usuario> corpoResposta = testRestTemplate //executa a requisição, armazena a resposta na variável
+			.exchange("/usuarios/cadastrar", HttpMethod.POST, corpoRequisicao, Usuario.class); 
 
-		assertEquals(HttpStatus.CREATED, corpoResposta.getStatusCode());
+		assertEquals(HttpStatus.CREATED, corpoResposta.getStatusCode()); //verifica se a resposta é a esperada. Se o usuario que foi cadastrado/criado é = resposta requisição esperada 
 	
 	}
 
@@ -62,18 +62,19 @@ public class UsuarioControllerTest {
 	@DisplayName("Não deve permitir duplicação do Usuário")
 	public void naoDeveDuplicarUsuario() {
 
-		usuarioService.cadastrarUsuario(new Usuario(0L, 
+		usuarioService.cadastrarUsuario(new Usuario(0L, //cadastrado direto no banco de dados
 			"Maria da Silva", "maria_silva@email.com.br", "13465278", "-"));
 
-		HttpEntity<Usuario> corpoRequisicao = new HttpEntity<Usuario>(new Usuario(0L, 
+		HttpEntity<Usuario> corpoRequisicao = new HttpEntity<Usuario>(new Usuario(0L, //simulando a requisição com o mesmo cadastro
 			"Maria da Silva", "maria_silva@email.com.br", "13465278", "-"));
 
-		ResponseEntity<Usuario> corpoResposta = testRestTemplate
+		ResponseEntity<Usuario> corpoResposta = testRestTemplate 
 			.exchange("/usuarios/cadastrar", HttpMethod.POST, corpoRequisicao, Usuario.class);
 
-		assertEquals(HttpStatus.BAD_REQUEST, corpoResposta.getStatusCode());
-	}
+		assertEquals(HttpStatus.BAD_REQUEST, corpoResposta.getStatusCode()); //se for informação duplicada ele retorna em bad request
 
+	}
+	
 	@Test
 	@DisplayName("Atualizar um Usuário")
 	public void deveAtualizarUmUsuario() {
